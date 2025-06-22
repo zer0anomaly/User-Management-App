@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - User Management App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <h1>User Management App</h1>
+      <button id="logoutBtn">Logout</button>
+    </header>
+
+    <main class="dashboard-main">
+      <h2 id="welcome">Welcome, John Doe!</h2>
+
+      <section class="profile-section">
+        <h3>Your Profile</h3>
+        <p><strong>Email:</strong> <span id="email">john.doe@example.com</span></p>
+        <p><strong>Role:</strong> <span id="role">user</span></p>
+      </section>
+
+      <section class="actions-section">
+        <h3>Quick Actions</h3>
+        <ul>
+          <li><a href="#">Edit Profile</a></li>
+          <li><a href="#">View All Users</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Just mock functionality for now
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      alert("Logging out (mock)");
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>
+
