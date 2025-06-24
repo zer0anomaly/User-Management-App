@@ -1,9 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';  // Make sure this path is correct
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { User } from './user.entity'; // adjust path if needed
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  register(registerDto: RegisterDto) {
+  constructor(
+    private readonly jwtService: JwtService,
+
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  async register(registerDto: RegisterDto) {
     const email = registerDto.email.trim();
     const password = registerDto.password.trim();
     const passwordconfirm = registerDto.passwordconfirm.trim();
@@ -15,10 +27,40 @@ export class AuthService {
       };
     }
 
+    const existingUser = await this.userRepository.findOne({ where: { email } });
+    if (existingUser) {
+      return {
+        success: false,
+        message: 'Email already registered'
+      };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = this.userRepository.create({ email, password: hashedPassword });
+    await this.userRepository.save(newUser);
+
     return {
       success: true,
       message: 'User registered successfully',
-      user: { email }
+      user: { email: newUser.email }
     };
+  }
+
+  async login(email: string, password: string): Promise<{ token: string }> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    const payload = { id: user.id, email: user.email };
+    const token = this.jwtService.sign(payload);
+
+    return { token };
   }
 }
