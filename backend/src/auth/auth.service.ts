@@ -19,11 +19,12 @@ export class AuthService {
     const email = registerDto.email.trim();
     const password = registerDto.password.trim();
     const passwordconfirm = registerDto.passwordconfirm.trim();
+    const name = registerDto.name?.trim(); // Assuming name is part of registerDto
 
     if (password !== passwordconfirm) {
       return {
         success: false,
-        message: 'Passwords do not match'
+        message: 'Passwords do not match',
       };
     }
 
@@ -31,18 +32,22 @@ export class AuthService {
     if (existingUser) {
       return {
         success: false,
-        message: 'Email already registered'
+        message: 'Email already registered',
       };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = this.userRepository.create({ email, password: hashedPassword });
+    const newUser = this.userRepository.create({
+      email,
+      password: hashedPassword,
+      name, // save name to DB
+    });
     await this.userRepository.save(newUser);
 
     return {
       success: true,
       message: 'User registered successfully',
-      user: { email: newUser.email }
+      user: { email: newUser.email, name: newUser.name },
     };
   }
 
@@ -58,9 +63,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    const payload = { id: user.id, email: user.email };
-    const token = this.jwtService.sign(payload);
+    const payload = {
+      sub: user.id,         // id as sub
+      username: user.name,  // username used in JWT payload
+      email: user.email,    // email included for frontend use
+    };
 
+    const token = this.jwtService.sign(payload);
     return { token };
   }
 }

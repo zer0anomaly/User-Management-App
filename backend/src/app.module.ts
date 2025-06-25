@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './auth/user.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ProfileController } from './profile/profile.controller';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { AppService } from './app.service';
     }),
     AuthModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, ProfileController],
   providers: [AppService],
 })
 export class AppModule {}
